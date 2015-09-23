@@ -1,2 +1,2 @@
 # optoforce
-ROS driver for the Optoforce sensor
+ROS packages for the Optoforce sensor
