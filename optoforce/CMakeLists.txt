@@ -99,10 +99,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES optoforce
-#  CATKIN_DEPENDS geometry_msgs rospy
-#  DEPENDS system_lib
+  CATKIN_DEPENDS geometry_msgs rospy
+  DEPENDS python-serial
 )
 
 ###########
