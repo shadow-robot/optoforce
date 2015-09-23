@@ -2,7 +2,7 @@
 <package>
   <name>optoforce</name>
   <version>0.0.1</version>
-  <description>optoforce contains a drover for the Optoforce sensor</description>
+  <description>optoforce contains a driver for the Optoforce sensor</description>
   <maintainer email="software@shadowrobot.com">Shadow Robot's software team</maintainer>
 
   <license>GPL</license>

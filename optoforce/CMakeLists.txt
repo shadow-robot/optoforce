@@ -6,7 +6,6 @@ project(optoforce)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
-  python-serial
   rospy
 )
 
@@ -102,7 +101,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES optoforce
-#  CATKIN_DEPENDS geometry_msgs python-serial rospy
+#  CATKIN_DEPENDS geometry_msgs rospy
 #  DEPENDS system_lib
 )
 

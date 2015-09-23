@@ -1,6 +1,6 @@
 # optoforce
 
-ROS driver for the Optoforce sensor.
+ROS driver for the [Optoforce sensor](http://optoforce.com/3dsensor/).
 
 ## Optoforce models supported
 
