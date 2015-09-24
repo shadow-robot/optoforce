@@ -64,23 +64,30 @@ class OptoforceDriver(object):
         while(True):
             s = self._serial.read(self._sensor_frame_length[self._sensor_type])
             data = self._decode(s)
-            self._publish(data)
+            if data:
+                self._publish(data)
             # print binascii.hexlify(s)
 
     def _decode(self, frame):
+        """
+        Decodes a sensor frame
+        It assumes that we get an entire frame and nothing else from serial.read. This assumption simplifies the code
+        and it seems to be always true for the moment.
+        @param frame - byte frame from the sensor
+        """
         if not self._is_checksum_valid(frame):
             return None
 
         data = OptoforceData()
         offset = 6
-        data.status = struct.unpack_from('<H', frame, offset)[0]
+        data.status = struct.unpack_from('>H', frame, offset)[0]
 
         if self._sensor_type == '34':
             for _ in range(4):  # 4 sensors
                 force_axes = []
                 for __ in range(3):  # 3 axes per sensor
                     offset += 2
-                    val = struct.unpack_from('<h', frame, offset)[0]
+                    val = struct.unpack_from('>h', frame, offset)[0]
                     # TODO Convert to Newtons (needs sensitivity report)
                     val = float(val) / 10000
                     force_axes.append(val)
@@ -89,19 +96,29 @@ class OptoforceDriver(object):
 
     def _publish(self, data):
         stamp = rospy.Time.now()
-        for i in range(4):  # 4 sensors
-            self._wrenches[i].header.stamp = stamp
-            self._wrenches[i].wrench.force.x = data.force[i][0]
-            self._wrenches[i].wrench.force.y = data.force[i][1]
-            self._wrenches[i].wrench.force.z = data.force[i][2]
-            self._publishers[i].publish(self._wrenches[i])
+        if self._sensor_type == '34':
+            for i in range(4):  # 4 sensors
+                self._wrenches[i].header.stamp = stamp
+                self._wrenches[i].wrench.force.x = data.force[i][0]
+                self._wrenches[i].wrench.force.y = data.force[i][1]
+                self._wrenches[i].wrench.force.z = data.force[i][2]
+                self._publishers[i].publish(self._wrenches[i])
 
     @staticmethod
     def _is_checksum_valid(frame):
-        # TODO Compute and check checksum
-        return True
+        offset = 0
+        calculated = 0
+
+        for _ in range(len(frame) - 2):
+            val = struct.unpack_from('>B', frame, offset)[0]
+            calculated += val
+            offset += 1
+
+        checksum = struct.unpack_from('>H', frame, offset)[0]
+        return calculated == checksum
 
 if __name__ == '__main__':
     rospy.init_node("optoforce")
     driver = OptoforceDriver()
+    driver.config()
     driver.run()
