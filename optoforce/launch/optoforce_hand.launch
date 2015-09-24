@@ -1,0 +1,8 @@
+<launch>
+  <include file="$(find optoforce)/launch/optoforce.launch"/>
+
+  <!-- Static transforms form Optoforce sensor to finger tip -->
+  <node name="optoforce_1_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_rftip optoforce_1 100" />
+  <node name="optoforce_2_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_fftip optoforce_2 100" />
+  <node name="optoforce_3_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_thtip optoforce_3 100" />
+</launch>

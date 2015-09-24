@@ -1,0 +1,3 @@
+<launch>
+  <node name="optoforce" pkg="optoforce" type="optoforce.py"/>
+</launch>
