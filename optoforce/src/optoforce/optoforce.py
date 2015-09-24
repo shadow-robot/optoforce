@@ -36,6 +36,9 @@ class OptoforceDriver(object):
                             '34': 34,
                             '64': 22}
 
+    # TODO Use Conversion to Newtons (needs sensitivity report) instead  of this simple scaling
+    _scale = 10000
+
     def __init__(self):
         """
         Initialize OptoforceDriver object
@@ -89,7 +92,7 @@ class OptoforceDriver(object):
                     offset += 2
                     val = struct.unpack_from('>h', frame, offset)[0]
                     # TODO Convert to Newtons (needs sensitivity report)
-                    val = float(val) / 10000
+                    val = float(val) / self._scale
                     force_axes.append(val)
                 data.force.append(force_axes)
         return data
