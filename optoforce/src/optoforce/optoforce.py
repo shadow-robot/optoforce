@@ -17,7 +17,7 @@
 
 import serial
 import struct
-import binascii
+# import binascii
 import rospy
 from geometry_msgs.msg import WrenchStamped
 
@@ -42,7 +42,6 @@ class OptoforceDriver(object):
     def __init__(self):
         """
         Initialize OptoforceDriver object
-        @param name - name of the MoveIt group
         """
         self._serial = serial.Serial('/dev/ttyACM0', 1000000, timeout=0.5)
         self._sensor_type = '34'
@@ -64,7 +63,7 @@ class OptoforceDriver(object):
         """
         Runs the read loop.
         """
-        while(True):
+        while not rospy.is_shutdown():
             s = self._serial.read(self._sensor_frame_length[self._sensor_type])
             data = self._decode(s)
             if data:
