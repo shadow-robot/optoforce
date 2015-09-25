@@ -17,7 +17,7 @@
 
 import serial
 import struct
-# import binascii
+import binascii
 import rospy
 from geometry_msgs.msg import WrenchStamped
 
@@ -32,9 +32,13 @@ class OptoforceDriver(object):
     """
     Driver for Optoforce sensors
     """
-    _sensor_frame_length = {'31': 16,
-                            '34': 34,
-                            '64': 22}
+    _OPTOFORCE_TYPE_31 = 0
+    _OPTOFORCE_TYPE_34 = 1
+    _OPTOFORCE_TYPE_64 = 2
+
+    _sensor_frame_length = {_OPTOFORCE_TYPE_31: 16,
+                            _OPTOFORCE_TYPE_34: 34,
+                            _OPTOFORCE_TYPE_64: 22}
 
     # TODO Use Conversion to Newtons (needs sensitivity report) instead  of this simple scaling
     _scale = 10000
@@ -43,12 +47,13 @@ class OptoforceDriver(object):
         """
         Initialize OptoforceDriver object
         """
-        self._serial = serial.Serial('/dev/ttyACM0', 1000000, timeout=0.5)
-        self._sensor_type = '34'
+        port = rospy.get_param("~port", "/dev/ttyACM0")
+        self._serial = serial.Serial(port, 1000000, timeout=None)
+        self._sensor_type = self._OPTOFORCE_TYPE_34
         self._publishers = []
         self._wrenches = []
 
-        if self._sensor_type == '34':
+        if self._sensor_type == self._OPTOFORCE_TYPE_34:
             for i in range(4):  # 4 sensors
                 self._publishers.append(rospy.Publisher("optoforce_" + str(i), WrenchStamped, queue_size=100))
                 wrench = WrenchStamped()
@@ -68,7 +73,7 @@ class OptoforceDriver(object):
             data = self._decode(s)
             if data:
                 self._publish(data)
-            # print binascii.hexlify(s)
+            rospy.logdebug(binascii.hexlify(s))
 
     def _decode(self, frame):
         """
@@ -84,7 +89,7 @@ class OptoforceDriver(object):
         offset = 6
         data.status = struct.unpack_from('>H', frame, offset)[0]
 
-        if self._sensor_type == '34':
+        if self._sensor_type == self._OPTOFORCE_TYPE_34:
             for _ in range(4):  # 4 sensors
                 force_axes = []
                 for __ in range(3):  # 3 axes per sensor
@@ -98,7 +103,7 @@ class OptoforceDriver(object):
 
     def _publish(self, data):
         stamp = rospy.Time.now()
-        if self._sensor_type == '34':
+        if self._sensor_type == self._OPTOFORCE_TYPE_34:
             for i in range(4):  # 4 sensors
                 self._wrenches[i].header.stamp = stamp
                 self._wrenches[i].wrench.force.x = data.force[i][0]

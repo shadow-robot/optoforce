@@ -214,7 +214,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Fixed Frame: rh_forearm
-    Frame Rate: 30
+    Frame Rate: 100
   Name: root
   Tools:
     - Class: rviz/Interact
@@ -267,5 +267,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 186
-  Y: 72
+  X: 176
+  Y: 62
