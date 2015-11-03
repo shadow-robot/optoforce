@@ -83,13 +83,15 @@ class OptoforceDriver(object):
         speed = self._speed_values[rospy.get_param("~speed", "100Hz")]
         filter = self._filter_values[rospy.get_param("~filter", "15Hz")]
         zero = self._zeroing_values[rospy.get_param("~zero", "false")]
+        config_length = 9
 
         rospy.loginfo("%d, %d, %d", speed, filter, zero)
 
-        frame = self._frame_header()
-        offset = len(frame)
-        frame = array.array('B', frame)
-        struct.pack_into('>BBB', frame, offset, speed, filter, zero)
+        header = self._frame_header()
+        offset = len(header)
+
+        frame = array.array('B', [0] * config_length)
+        struct.pack_into('>sBBB', frame, offset, header, speed, filter, zero)
 
         checksum = self._checksum(frame, len(frame))
         offset = len(frame)
