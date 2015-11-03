@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import array
 import serial
 import struct
 import binascii
@@ -87,6 +88,7 @@ class OptoforceDriver(object):
 
         frame = self._frame_header()
         offset = len(frame)
+        frame = array.array('B', frame)
         struct.pack_into('>BBB', frame, offset, speed, filter, zero)
 
         checksum = self._checksum(frame, len(frame))
