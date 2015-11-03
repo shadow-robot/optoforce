@@ -41,6 +41,8 @@ class OptoforceDriver(object):
                             _OPTOFORCE_TYPE_34: 34,
                             _OPTOFORCE_TYPE_64: 22}
 
+    _config_response_frame_length = 7
+
     _speed_values = {"Stop":    0,
                      "1000Hz": 1,
                      "333Hz": 3,
@@ -85,17 +87,16 @@ class OptoforceDriver(object):
         zero = self._zeroing_values[rospy.get_param("~zero", "false")]
         config_length = 9
 
-        rospy.loginfo("%d, %d, %d", speed, filter, zero)
-
         header = self._frame_header()
-        offset = len(header)
+        offset = 0
 
         frame = array.array('B', [0] * config_length)
-        struct.pack_into('>sBBB', frame, offset, header, speed, filter, zero)
+        struct.pack_into('>4s3B', frame, offset, header, speed, filter, zero)
 
         checksum = self._checksum(frame, len(frame))
         offset = len(header) + 3
         struct.pack_into('>H', frame, offset, checksum)
+        rospy.logdebug(binascii.hexlify(frame))
 
         self._serial.write(frame)
 
@@ -105,10 +106,10 @@ class OptoforceDriver(object):
         """
         while not rospy.is_shutdown():
             s = self._serial.read(self._sensor_frame_length[self._sensor_type])
+            rospy.logdebug(binascii.hexlify(s))
             data = self._decode(s)
             if data:
                 self._publish(data)
-            rospy.logdebug(binascii.hexlify(s))
 
     def _decode(self, frame):
         """
@@ -118,6 +119,11 @@ class OptoforceDriver(object):
         @param frame - byte frame from the sensor
         """
         if not self._is_checksum_valid(frame):
+            rospy.logwarn("Bad checksum")
+            # This is a trick to recover the frame synchronisation without having to implement a state machine.
+            # We are assuming that the reception of a config response frame (of shorter length) is the cause
+            # of the loss of frame synchronisation
+            s = self._serial.read(self._config_response_frame_length)
             return None
 
         data = OptoforceData()
@@ -168,7 +174,7 @@ class OptoforceDriver(object):
 
     @staticmethod
     def _frame_header():
-        return struct.pack('>BBBB', 170, 0, 50, 3)
+        return struct.pack('>4B', 170, 0, 50, 3)
 
 
 if __name__ == '__main__':
