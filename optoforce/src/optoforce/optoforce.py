@@ -123,6 +123,8 @@ class OptoforceDriver(object):
             # This is a trick to recover the frame synchronisation without having to implement a state machine.
             # We are assuming that the reception of a config response frame (of shorter length) is the cause
             # of the loss of frame synchronisation
+            # This method would be wrong if the cause were an actual transmission error, but this doesn't
+            # seem to happen.
             s = self._serial.read(self._config_response_frame_length)
             return None
 
