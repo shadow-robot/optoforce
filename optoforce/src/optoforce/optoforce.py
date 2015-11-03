@@ -87,7 +87,7 @@ class OptoforceDriver(object):
 
         frame = self._frame_header()
         offset = len(frame)
-        struct.pack_into('>B', frame, offset, speed, filter, zero)
+        struct.pack_into('>BBB', frame, offset, speed, filter, zero)
 
         checksum = self._checksum(frame, len(frame))
         offset = len(frame)
@@ -164,7 +164,7 @@ class OptoforceDriver(object):
 
     @staticmethod
     def _frame_header():
-        return struct.pack('>B', 170, 0, 50, 3)
+        return struct.pack('>BBBB', 170, 0, 50, 3)
 
 
 if __name__ == '__main__':
