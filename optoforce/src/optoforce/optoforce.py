@@ -94,7 +94,7 @@ class OptoforceDriver(object):
         struct.pack_into('>sBBB', frame, offset, header, speed, filter, zero)
 
         checksum = self._checksum(frame, len(frame))
-        offset = len(frame)
+        offset = len(header) + 3
         struct.pack_into('>H', frame, offset, checksum)
 
         self._serial.write(frame)
