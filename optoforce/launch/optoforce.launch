@@ -1,3 +1,32 @@
 <launch>
-  <node name="optoforce" pkg="optoforce" type="optoforce.py" output="screen" />
+  <!-- Serial port for the optoforce sensor -->
+  <arg name="port" default="/dev/ttyACM0"/>
+  <!-- Update speed. Available values:
+        "Stop"
+        "1000Hz"
+        "333Hz"
+        "100Hz"
+        "30Hz"
+        "10Hz"
+        -->
+  <arg name="speed" default="100Hz"/>
+  <!-- Internal filtering. Available values:
+        "No"
+        "500Hz"
+        "150Hz"
+        "50Hz"
+        "15Hz"
+        "5Hz"
+        "1.5Hz"
+        -->
+  <arg name="filter" default="15Hz"/>
+  <!-- Clear the sensors offset -->
+  <arg name="zero" default="true"/>
+
+  <node name="optoforce" pkg="optoforce" type="optoforce.py" output="screen">
+    <param name="port" value="$(arg port)"/>
+    <param name="speed" value="$(arg speed)"/>
+    <param name="filter" value="$(arg filter)"/>
+    <param name="zero" value="$(arg zero)"/>
+  </node>
 </launch>

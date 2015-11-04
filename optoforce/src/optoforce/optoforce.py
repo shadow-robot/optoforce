@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import array
 import serial
 import struct
 import binascii
@@ -40,6 +41,26 @@ class OptoforceDriver(object):
                             _OPTOFORCE_TYPE_34: 34,
                             _OPTOFORCE_TYPE_64: 22}
 
+    _config_response_frame_length = 7
+
+    _speed_values = {"Stop":    0,
+                     "1000Hz": 1,
+                     "333Hz": 3,
+                     "100Hz": 10,
+                     "30Hz": 33,
+                     "10Hz": 100}
+
+    _filter_values = {"No": 0,
+                      "500Hz": 1,
+                      "150Hz": 2,
+                      "50Hz": 3,
+                      "15Hz": 4,
+                      "5Hz": 5,
+                      "1.5Hz": 6}
+
+    _zeroing_values = {False: 0,
+                       True: 255}
+
     # TODO Use Conversion to Newtons (needs sensitivity report) instead  of this simple scaling
     _scale = 10000
 
@@ -61,8 +82,23 @@ class OptoforceDriver(object):
                 self._wrenches.append(wrench)
 
     def config(self):
-        # TODO Send config parameters
-        pass
+        speed = self._speed_values[rospy.get_param("~speed", "100Hz")]
+        filter = self._filter_values[rospy.get_param("~filter", "15Hz")]
+        zero = self._zeroing_values[rospy.get_param("~zero", "false")]
+        config_length = 9
+
+        header = self._frame_header()
+        offset = 0
+
+        frame = array.array('B', [0] * config_length)
+        struct.pack_into('>4s3B', frame, offset, header, speed, filter, zero)
+
+        checksum = self._checksum(frame, len(frame))
+        offset = len(header) + 3
+        struct.pack_into('>H', frame, offset, checksum)
+        rospy.logdebug(binascii.hexlify(frame))
+
+        self._serial.write(frame)
 
     def run(self):
         """
@@ -70,10 +106,10 @@ class OptoforceDriver(object):
         """
         while not rospy.is_shutdown():
             s = self._serial.read(self._sensor_frame_length[self._sensor_type])
+            rospy.logdebug(binascii.hexlify(s))
             data = self._decode(s)
             if data:
                 self._publish(data)
-            rospy.logdebug(binascii.hexlify(s))
 
     def _decode(self, frame):
         """
@@ -83,6 +119,13 @@ class OptoforceDriver(object):
         @param frame - byte frame from the sensor
         """
         if not self._is_checksum_valid(frame):
+            rospy.logwarn("Bad checksum")
+            # This is a trick to recover the frame synchronisation without having to implement a state machine.
+            # We are assuming that the reception of a config response frame (of shorter length) is the cause
+            # of the loss of frame synchronisation
+            # This method would be wrong if the cause were an actual transmission error, but this doesn't
+            # seem to happen.
+            s = self._serial.read(self._config_response_frame_length)
             return None
 
         data = OptoforceData()
@@ -112,17 +155,29 @@ class OptoforceDriver(object):
                 self._publishers[i].publish(self._wrenches[i])
 
     @staticmethod
-    def _is_checksum_valid(frame):
+    def _checksum(frame, length):
         offset = 0
         calculated = 0
 
-        for _ in range(len(frame) - 2):
+        for _ in range(length):
             val = struct.unpack_from('>B', frame, offset)[0]
             calculated += val
             offset += 1
 
+        return calculated
+
+    @classmethod
+    def _is_checksum_valid(cls, frame):
+        calculated = cls._checksum(frame, len(frame) - 2)
+        offset = len(frame) - 2
+
         checksum = struct.unpack_from('>H', frame, offset)[0]
         return calculated == checksum
+
+    @staticmethod
+    def _frame_header():
+        return struct.pack('>4B', 170, 0, 50, 3)
+
 
 if __name__ == '__main__':
     rospy.init_node("optoforce")
