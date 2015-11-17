@@ -1,7 +1,9 @@
 <launch>
   <arg name="rviz" default="true"/>
 
-  <include file="$(find optoforce)/launch/optoforce.launch"/>
+  <include file="$(find optoforce)/launch/optoforce.launch">
+     <arg name="type" value="s-ch/3-axis|68 v1.1" />
+  </include>
 
   <include if="$(arg rviz)" file="$(find optoforce)/launch/rviz.launch"/>
 

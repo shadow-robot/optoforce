@@ -36,12 +36,15 @@ class OptoforceDriver(object):
     _OPTOFORCE_TYPE_31 = 0
     _OPTOFORCE_TYPE_34 = 1
     _OPTOFORCE_TYPE_64 = 2
+    _OPTOFORCE_TYPE_68v1_1 = 3
 
     _sensor_frame_length = {_OPTOFORCE_TYPE_31: 16,
                             _OPTOFORCE_TYPE_34: 34,
-                            _OPTOFORCE_TYPE_64: 22}
+                            _OPTOFORCE_TYPE_64: 22,
+                            _OPTOFORCE_TYPE_68v1_1: 29}
 
     _daq_type_map = {"s-ch/3-axis": _OPTOFORCE_TYPE_31,
+                     "s-ch/3-axis|68 v1.1": _OPTOFORCE_TYPE_68v1_1,
                      "m-ch/3-axis": _OPTOFORCE_TYPE_34,
                      "s-ch/6-axis": _OPTOFORCE_TYPE_64}
 
@@ -82,7 +85,7 @@ class OptoforceDriver(object):
         self._nb_sensors = 0
         self._nb_axis = 0
 
-        if self._sensor_type == self._OPTOFORCE_TYPE_31:
+        if self._sensor_type == self._OPTOFORCE_TYPE_31 or self._sensor_type == self._OPTOFORCE_TYPE_68v1_1:
             self._nb_sensors = 1
             self._nb_axis = 3
         elif self._sensor_type == self._OPTOFORCE_TYPE_34:
@@ -100,6 +103,10 @@ class OptoforceDriver(object):
             self._wrenches.append(wrench)
 
     def config(self):
+        if self._sensor_type == self._OPTOFORCE_TYPE_68v1_1:
+            frame = struct.pack('>B', 0)
+            self._serial.write(frame)
+            return
         speed = self._speed_values[rospy.get_param("~speed", "100Hz")]
         filter = self._filter_values[rospy.get_param("~filter", "15Hz")]
         zero = self._zeroing_values[rospy.get_param("~zero", "false")]
@@ -143,18 +150,25 @@ class OptoforceDriver(object):
             # of the loss of frame synchronisation
             # This method would be wrong if the cause were an actual transmission error, but this doesn't
             # seem to happen.
-            s = self._serial.read(self._config_response_frame_length)
+            self._serial.read(self._config_response_frame_length)
             return None
 
         data = OptoforceData()
-        offset = 6
-        data.status = struct.unpack_from('>H', frame, offset)[0]
+
+        if self._sensor_type == self._OPTOFORCE_TYPE_68v1_1:
+            offset = 1
+        else:
+            offset = 6
+            data.status = struct.unpack_from('>H', frame, offset)[0]
 
         for _ in range(self._nb_sensors):
             force_axes = []
-            for __ in range(self._nb_axis):
+            for axis in range(self._nb_axis):
                 offset += 2
-                val = struct.unpack_from('>h', frame, offset)[0]
+                if self._sensor_type == self._OPTOFORCE_TYPE_68v1_1 and axis == 2:
+                    val = struct.unpack_from('>H', frame, offset)[0] - 32000
+                else:
+                    val = struct.unpack_from('>h', frame, offset)[0]
                 # TODO Convert to Newtons (needs sensitivity report)
                 val = float(val) / self._scale
                 force_axes.append(val)
@@ -187,9 +201,12 @@ class OptoforceDriver(object):
 
         return calculated
 
-    @classmethod
-    def _is_checksum_valid(cls, frame):
-        calculated = cls._checksum(frame, len(frame) - 2)
+    def _is_checksum_valid(self, frame):
+        if self._sensor_type == self._OPTOFORCE_TYPE_68v1_1:
+            chk_frame = frame[2:]
+            calculated = self._checksum(chk_frame, len(chk_frame) - 2)
+        else:
+            calculated = self._checksum(frame, len(frame) - 2)
         offset = len(frame) - 2
 
         checksum = struct.unpack_from('>H', frame, offset)[0]
