@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find optoforce)/launch/optoforce_hand.launch"/>
+  <include file="$(find sr_robot_launch)/launch/srhand.launch"/>
+</launch>
