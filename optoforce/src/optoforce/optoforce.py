@@ -41,6 +41,10 @@ class OptoforceDriver(object):
                             _OPTOFORCE_TYPE_34: 34,
                             _OPTOFORCE_TYPE_64: 22}
 
+    _daq_type_map = {"s-ch/3-axis": _OPTOFORCE_TYPE_31,
+                     "m-ch/3-axis": _OPTOFORCE_TYPE_34,
+                     "s-ch/6-axis": _OPTOFORCE_TYPE_64}
+
     _config_response_frame_length = 7
 
     _speed_values = {"Stop":    0,
@@ -70,16 +74,30 @@ class OptoforceDriver(object):
         """
         port = rospy.get_param("~port", "/dev/ttyACM0")
         self._serial = serial.Serial(port, 1000000, timeout=None)
-        self._sensor_type = self._OPTOFORCE_TYPE_34
+        sensor_type_param = rospy.get_param("~type", "m-ch/3-axis")
+        self._sensor_type = self._daq_type_map[sensor_type_param]
+        self._starting_index = rospy.get_param("~starting_index", 0)
         self._publishers = []
         self._wrenches = []
+        self._nb_sensors = 0
+        self._nb_axis = 0
 
-        if self._sensor_type == self._OPTOFORCE_TYPE_34:
-            for i in range(4):  # 4 sensors
-                self._publishers.append(rospy.Publisher("optoforce_" + str(i), WrenchStamped, queue_size=100))
-                wrench = WrenchStamped()
-                wrench.header.frame_id = "optoforce_" + str(i)
-                self._wrenches.append(wrench)
+        if self._sensor_type == self._OPTOFORCE_TYPE_31:
+            self._nb_sensors = 1
+            self._nb_axis = 3
+        elif self._sensor_type == self._OPTOFORCE_TYPE_34:
+            self._nb_sensors = 4
+            self._nb_axis = 3
+        elif self._sensor_type == self._OPTOFORCE_TYPE_64:
+            self._nb_sensors = 1
+            self._nb_axis = 6
+
+        for i in range(self._nb_sensors):
+            self._publishers.append(rospy.Publisher("optoforce_" + str(self._starting_index + i), WrenchStamped,
+                                                    queue_size=100))
+            wrench = WrenchStamped()
+            wrench.header.frame_id = "optoforce_" + str(self._starting_index + i)
+            self._wrenches.append(wrench)
 
     def config(self):
         speed = self._speed_values[rospy.get_param("~speed", "100Hz")]
@@ -132,27 +150,30 @@ class OptoforceDriver(object):
         offset = 6
         data.status = struct.unpack_from('>H', frame, offset)[0]
 
-        if self._sensor_type == self._OPTOFORCE_TYPE_34:
-            for _ in range(4):  # 4 sensors
-                force_axes = []
-                for __ in range(3):  # 3 axes per sensor
-                    offset += 2
-                    val = struct.unpack_from('>h', frame, offset)[0]
-                    # TODO Convert to Newtons (needs sensitivity report)
-                    val = float(val) / self._scale
-                    force_axes.append(val)
-                data.force.append(force_axes)
+        for _ in range(self._nb_sensors):
+            force_axes = []
+            for __ in range(self._nb_axis):
+                offset += 2
+                val = struct.unpack_from('>h', frame, offset)[0]
+                # TODO Convert to Newtons (needs sensitivity report)
+                val = float(val) / self._scale
+                force_axes.append(val)
+            data.force.append(force_axes)
+
         return data
 
     def _publish(self, data):
         stamp = rospy.Time.now()
-        if self._sensor_type == self._OPTOFORCE_TYPE_34:
-            for i in range(4):  # 4 sensors
-                self._wrenches[i].header.stamp = stamp
-                self._wrenches[i].wrench.force.x = data.force[i][0]
-                self._wrenches[i].wrench.force.y = data.force[i][1]
-                self._wrenches[i].wrench.force.z = data.force[i][2]
-                self._publishers[i].publish(self._wrenches[i])
+        for i in range(self._nb_sensors):
+            self._wrenches[i].header.stamp = stamp
+            self._wrenches[i].wrench.force.x = data.force[i][0]
+            self._wrenches[i].wrench.force.y = data.force[i][1]
+            self._wrenches[i].wrench.force.z = data.force[i][2]
+            if self._nb_axis == 6:
+                self._wrenches[i].wrench.torque.x = data.force[i][3]
+                self._wrenches[i].wrench.torque.y = data.force[i][4]
+                self._wrenches[i].wrench.torque.z = data.force[i][5]
+            self._publishers[i].publish(self._wrenches[i])
 
     @staticmethod
     def _checksum(frame, length):
