@@ -22,7 +22,7 @@
   <arg name="filter" default="15Hz"/>
   <!-- Clear the sensors offset -->
   <arg name="zero" default="true"/>
-  <!-- DAQ (Data Acquisition) Type. I cna be single or multiple channel, and have 3 or 6 axis. Available values:
+  <!-- DAQ (Data Acquisition) Type. It can be single or multiple channel, and have 3 or 6 axis. Available values:
         "s-ch/3-axis"
         "m-ch/3-axis"
         "s-ch/6-axis"
