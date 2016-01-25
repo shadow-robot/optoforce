@@ -22,11 +22,22 @@
   <arg name="filter" default="15Hz"/>
   <!-- Clear the sensors offset -->
   <arg name="zero" default="true"/>
+  <!-- DAQ (Data Acquisition) Type. It can be single or multiple channel, and have 3 or 6 axis. Available values:
+        "s-ch/3-axis"
+        "m-ch/3-axis"
+        "s-ch/6-axis"
+        -->
+  <arg name="type" default="m-ch/3-axis"/>
+  <!-- Numerical index of the first sensor. The rest (if this is a multi-channel DAC)
+  will get the consecutive numbers -->
+  <arg name="starting_index" default="0"/>
+
 
   <node name="optoforce" pkg="optoforce" type="optoforce.py" output="screen">
     <param name="port" value="$(arg port)"/>
     <param name="speed" value="$(arg speed)"/>
     <param name="filter" value="$(arg filter)"/>
     <param name="zero" value="$(arg zero)"/>
+    <param name="type" value="$(arg type)"/>
   </node>
 </launch>
