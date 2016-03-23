@@ -65,9 +65,6 @@ class OptoforceDriver(object):
     _zeroing_values = {False: 0,
                        True: 255}
 
-    # TODO Use Conversion to Newtons (needs sensitivity report) instead  of this simple scaling
-    _scale = 10000
-
     def __init__(self):
         """
         Initialize OptoforceDriver object
