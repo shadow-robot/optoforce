@@ -79,16 +79,6 @@ class OptoforceDriver(object):
         self._nb_sensors = 0
         self._nb_axis = 0
         
-        # Conversion to Newtons (based on the sensitivity report provided with
-        # the sensor)
-        scale_fx = rospy.get_param("~scale_fx", 1000)
-        scale_fy = rospy.get_param("~scale_fy", 1000)
-        scale_fz = rospy.get_param("~scale_fz", 1000)
-        scale_tx = rospy.get_param("~scale_tx", 1000)
-        scale_ty = rospy.get_param("~scale_ty", 1000)
-        scale_tz = rospy.get_param("~scale_tz", 1000)
-        self._scale = [scale_fx, scale_fy, scale_fz, scale_tx, scale_ty, scale_tz]
-
         if self._sensor_type == self._OPTOFORCE_TYPE_31:
             self._nb_sensors = 1
             self._nb_axis = 3
@@ -98,6 +88,17 @@ class OptoforceDriver(object):
         elif self._sensor_type == self._OPTOFORCE_TYPE_64:
             self._nb_sensors = 1
             self._nb_axis = 6
+            
+        self._scale = rospy.get_param("~scale")
+
+        if len(self._scale) != self._nb_sensors:
+            raise ValueError("The number of sensors and scale factor vectors given doesn't match.") 
+        else:
+            for x in range(self._nb_sensors):
+                if len(self._scale[x]) != self._nb_axis:
+                    print(self._nb_axis)
+                    print(self._scale[x])
+                    raise ValueError("Number of axis and scaling factors given doesn't match.") 
 
         for i in range(self._nb_sensors):
             self._publishers.append(rospy.Publisher("optoforce_" + str(self._starting_index + i), WrenchStamped,
@@ -157,13 +158,13 @@ class OptoforceDriver(object):
         offset = 6
         data.status = struct.unpack_from('>H', frame, offset)[0]
 
-        for _ in range(self._nb_sensors):
+        for s in range(self._nb_sensors):
             force_axes = []
-            for i in range(self._nb_axis):
+            for a in range(self._nb_axis):
                 offset += 2
                 val = struct.unpack_from('>h', frame, offset)[0]
                 # TODO Convert to Newtons (needs sensitivity report)
-                val = float(val) / self._scale(i)
+                val = float(val) / self._scale[s][a]
                 force_axes.append(val)
             data.force.append(force_axes)
 
