@@ -81,6 +81,16 @@ class OptoforceDriver(object):
         self._wrenches = []
         self._nb_sensors = 0
         self._nb_axis = 0
+        
+        # Conversion to Newtons (based on the sensitivity report provided with
+        # the sensor)
+        scale_fx = rospy.get_param("~scale_fx", 1000)
+        scale_fy = rospy.get_param("~scale_fy", 1000)
+        scale_fz = rospy.get_param("~scale_fz", 1000)
+        scale_tx = rospy.get_param("~scale_tx", 1000)
+        scale_ty = rospy.get_param("~scale_ty", 1000)
+        scale_tz = rospy.get_param("~scale_tz", 1000)
+        self._scale = [scale_fx, scale_fy, scale_fz, scale_tx, scale_ty, scale_tz]
 
         if self._sensor_type == self._OPTOFORCE_TYPE_31:
             self._nb_sensors = 1
@@ -152,11 +162,11 @@ class OptoforceDriver(object):
 
         for _ in range(self._nb_sensors):
             force_axes = []
-            for __ in range(self._nb_axis):
+            for i in range(self._nb_axis):
                 offset += 2
                 val = struct.unpack_from('>h', frame, offset)[0]
                 # TODO Convert to Newtons (needs sensitivity report)
-                val = float(val) / self._scale
+                val = float(val) / self._scale(i)
                 force_axes.append(val)
             data.force.append(force_axes)
 
