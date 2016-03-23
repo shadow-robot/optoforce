@@ -92,13 +92,11 @@ class OptoforceDriver(object):
         self._scale = rospy.get_param("~scale")
 
         if len(self._scale) != self._nb_sensors:
-            raise ValueError("The number of sensors and scale factor vectors given doesn't match.") 
+            raise ValueError("Number of sensors [%i]and scaling factor vectors [%i] given doesn't match." % (self._nb_sensors, len(self._scale))) 
         else:
             for x in range(self._nb_sensors):
                 if len(self._scale[x]) != self._nb_axis:
-                    print(self._nb_axis)
-                    print(self._scale[x])
-                    raise ValueError("Number of axis and scaling factors given doesn't match.") 
+                    raise ValueError("Number of axis [%i] and scaling factors [%i] given doesn't match." % (self._nb_axis, len(self._scale[x]))) 
 
         for i in range(self._nb_sensors):
             self._publishers.append(rospy.Publisher("optoforce_" + str(self._starting_index + i), WrenchStamped,
