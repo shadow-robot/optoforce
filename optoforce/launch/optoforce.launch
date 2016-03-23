@@ -31,25 +31,8 @@
   <!-- Numerical index of the first sensor. The rest (if this is a multi-channel DAC)
   will get the consecutive numbers -->
   <arg name="starting_index" default="0"/>
-  <!-- Scaling factor for Fx converting the numeric value from the sensor to Newtons (see
-  the optoforce's sensitivity report) -->
-  <arg name="scale_fx" default="1000"/>
-  <!-- Scaling factor for Fy converting the numeric value from the sensor to Newtons (see
-  the optoforce's sensitivity report) -->
-  <arg name="scale_fy" default="1000"/>
-  <!-- Scaling factor for Fz converting the numeric value from the sensor to Newtons (see
-  the optoforce's sensitivity report) -->
-  <arg name="scale_fz" default="1000"/>
-  <!-- Scaling factor for Tx converting the numeric value from the sensor to Newtons (see
-  the optoforce's sensitivity report) -->
-  <arg name="scale_tx" default="1000"/>
-  <!-- Scaling factor for Ty converting the numeric value from the sensor to Newtons (see
-  the optoforce's sensitivity report) -->
-  <arg name="scale_ty" default="1000"/>
-  <!-- Scaling factor for Tz converting the numeric value from the sensor to Newtons (see
-  the optoforce's sensitivity report) -->
-  <arg name="scale_tz" default="1000"/>
-
+    <!-- Direction of scaling file -->
+  <arg name="scaling_file" default=""/>
 
   <node name="optoforce" pkg="optoforce" type="optoforce.py" output="screen">
     <param name="port" value="$(arg port)"/>
@@ -57,11 +40,6 @@
     <param name="filter" value="$(arg filter)"/>
     <param name="zero" value="$(arg zero)"/>
     <param name="type" value="$(arg type)"/>
-    <param name="scale_fx" value="$(arg scale_fx)"/>
-    <param name="scale_fy" value="$(arg scale_fy)"/>
-    <param name="scale_fz" value="$(arg scale_fz)"/>
-    <param name="scale_tx" value="$(arg scale_tx)"/>
-    <param name="scale_ty" value="$(arg scale_ty)"/>
-    <param name="scale_tz" value="$(arg scale_tz)"/>
+    <rosparam command="load" file="$(arg scaling_file)"/>
   </node>
 </launch>
