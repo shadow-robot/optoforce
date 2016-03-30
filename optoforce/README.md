@@ -4,7 +4,9 @@ ROS driver for the [Optoforce sensor](http://optoforce.com/3dsensor/).
 
 ## Optoforce models supported
 
+- Single-channel 3 axis force sensor
 - Multi-channel 3 axis force sensor (4 channels)
+- Single-channel 6 axis force sensor
 
 ## Driver description
 
