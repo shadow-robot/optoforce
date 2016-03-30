@@ -31,7 +31,8 @@
   <!-- Numerical index of the first sensor. The rest (if this is a multi-channel DAC)
   will get the consecutive numbers -->
   <arg name="starting_index" default="0"/>
-
+  <!-- Direction of scaling file -->
+  <arg name="scaling_file" default="$(find optoforce)/config/multi_channel_3_axis_generic_scale.yaml"/>
 
   <node name="$(anon optoforce)" pkg="optoforce" type="optoforce.py" output="screen">
     <param name="port" value="$(arg port)"/>
@@ -40,5 +41,6 @@
     <param name="zero" value="$(arg zero)"/>
     <param name="type" value="$(arg type)"/>
     <param name="starting_index" value="$(arg starting_index)"/>
+    <rosparam command="load" file="$(arg scaling_file)"/>
   </node>
 </launch>
