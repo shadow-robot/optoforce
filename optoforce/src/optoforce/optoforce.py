@@ -125,7 +125,7 @@ class OptoforceDriver(object):
         # Create and advertise publishers for each connected sensor
         topic_basename = "optoforce_"
         if self._append_topic_serial:
-            serial_number = self.really_get_unique_id()
+            serial_number = self.get_serial_number()
             topic_basename += serial_number + '_'
 
         for i in range(self._nb_sensors):
@@ -136,10 +136,6 @@ class OptoforceDriver(object):
             wrench = WrenchStamped()
             wrench.header.frame_id = topic_basename + str(self._starting_index + i)
             self._wrenches.append(wrench)
-
-        # Advertise a service to retrieve the unique ID of the sensor
-        self._service = rospy.Service('get_unique_id', std_srvs.srv.Empty,
-                                      self.get_unique_id)
 
     def config(self):
         speed = self._speed_values[rospy.get_param("~speed", "100Hz")]
@@ -160,18 +156,10 @@ class OptoforceDriver(object):
 
         self._serial.write(frame)
 
-    def get_unique_id(self, request):
-        config_length = 6
-        offset = 0
-
-        # Build the frame and send it
-        frame = array.array('B', [0] * config_length)
-        struct.pack_into('>6B', frame, offset, 171, 0, 18, 8, 0, 197)
-        self._serial.write(frame)
-
-        return std_srvs.srv.EmptyResponse()
-
-    def really_get_unique_id(self):
+    def get_serial_number(self):
+        """
+        Ask the sensor for its serial number
+        """
         config_length = 6
         offset = 0
 
@@ -306,6 +294,4 @@ if __name__ == '__main__':
     rospy.init_node("optoforce", log_level=rospy.DEBUG)
     driver = OptoforceDriver()
     driver.config()
-    driver.really_get_unique_id()
     driver.run()
-    # rospy.spin()
