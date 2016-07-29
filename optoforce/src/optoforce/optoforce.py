@@ -93,6 +93,7 @@ class OptoforceDriver(object):
         sensor_type_param = rospy.get_param("~type", "m-ch/3-axis")
         self._sensor_type = self._daq_type_map[sensor_type_param]
         self._starting_index = rospy.get_param("~starting_index", 0)
+        self._append_topic_serial = rospy.get_param("~append_serial_number", False)
         self._publishers = []
         self._wrenches = []
         self._nb_sensors = 0
@@ -121,13 +122,12 @@ class OptoforceDriver(object):
                     raise ValueError("Number of axis [%i] and scaling factors "
                         "[%i] given doesn't match." % (self._nb_axis, len(self._scale[x])))
 
-        self._serial_number = ''
-        self.really_get_unique_id()
-        append_topic_serial = True
         # Create and advertise publishers for each connected sensor
         topic_basename = "optoforce_"
-        if append_topic_serial:
-            topic_basename += self._serial_number + '_'
+        if self._append_topic_serial:
+            serial_number = self.really_get_unique_id()
+            topic_basename += serial_number + '_'
+
         for i in range(self._nb_sensors):
             self._publishers.append(rospy.Publisher(topic_basename +
                                                     str(self._starting_index + i),
@@ -192,7 +192,9 @@ class OptoforceDriver(object):
 
         # Parse the frame to retrieve the serial number
         if response_arrived:
-            self._serial_number = ''.join(self._decode(frame)).strip()
+            return ''.join(self._decode(frame)).strip()
+        else:
+            return None
 
     def run(self):
         """
@@ -261,8 +263,7 @@ class OptoforceDriver(object):
         elif header == (170, 0, 18, 8):
             offset = 4
             serial_number = struct.unpack_from('>8c', frame, offset)
-            rospy.logdebug("We were given the following serial number: " +
-                            ''.join(serial_number))
+            rospy.logdebug("We have the serial number " + ''.join(serial_number))
             return serial_number
         else:
             rospy.logwarn("I can't recognize the frame's header:\n" + frame)
