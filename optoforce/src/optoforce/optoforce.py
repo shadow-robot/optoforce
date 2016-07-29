@@ -218,7 +218,7 @@ class OptoforceDriver(object):
         @param frame - byte frame from the sensor
         """
         if not self._is_checksum_valid(frame):
-            rospy.logwarn("Bad checksum")
+            rospy.logwarn("Bad checksum in frame:\n" + frame)
             # This is a trick to recover the frame synchronisation without having to implement a state machine.
             # We are assuming that the reception of a config response frame (of shorter length) is the cause
             # of the loss of frame synchronisation
@@ -251,6 +251,9 @@ class OptoforceDriver(object):
             offset = 4
             string = struct.unpack_from('>8c', frame, offset)
             print(''.join(string))
+        else:
+            rospy.logwarn("I can't recognize the frame's header:\n" + frame)
+            return None
 
     def _publish(self, data):
         stamp = rospy.Time.now()
