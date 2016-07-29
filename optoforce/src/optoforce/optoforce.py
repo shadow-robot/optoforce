@@ -21,7 +21,6 @@ import serial
 import struct
 import binascii
 import rospy
-import std_srvs.srv
 from geometry_msgs.msg import WrenchStamped
 
 
