@@ -225,7 +225,6 @@ class OptoforceDriver(object):
             # of the loss of frame synchronisation
             # This method would be wrong if the cause were an actual transmission error, but this doesn't
             # seem to happen.
-            # FIXME: s = self._serial.read(self._config_response_frame_length)
             return None
 
         header = struct.unpack_from('>4B', frame)
@@ -290,7 +289,7 @@ class OptoforceDriver(object):
         return calculated == checksum
 
 if __name__ == '__main__':
-    rospy.init_node("optoforce", log_level=rospy.DEBUG)
+    rospy.init_node("optoforce")
     driver = OptoforceDriver()
     driver.config()
     driver.run()
