@@ -67,6 +67,18 @@ class OptoforceDriver(object):
     _zeroing_values = {False: 0,
                        True: 255}
 
+    # Tree representation of all accepted headers.
+    # Leaf nodes are the lenght of the frame associated with the header
+    _headers = {170:
+                   {0:
+                       {18:
+                           {8: 14}},
+                   7:
+                       {8:
+                           {10: 16,
+                           16: 34,
+                       28: 22}}}}
+
     def __init__(self):
         """
         Initialize OptoforceDriver object
@@ -86,6 +98,7 @@ class OptoforceDriver(object):
         self._nb_sensors = 0
         self._nb_axis = 0
 
+        # Set the values for _nb_sensors and _nb_axis based on the sensor at use
         if self._sensor_type == self._OPTOFORCE_TYPE_31:
             self._nb_sensors = 1
             self._nb_axis = 3
@@ -96,6 +109,7 @@ class OptoforceDriver(object):
             self._nb_sensors = 1
             self._nb_axis = 6
 
+        # Retrieve and check the scaling factors
         self._scale = rospy.get_param("~scale")
 
         if len(self._scale) != self._nb_sensors:
@@ -107,30 +121,25 @@ class OptoforceDriver(object):
                     raise ValueError("Number of axis [%i] and scaling factors "
                         "[%i] given doesn't match." % (self._nb_axis, len(self._scale[x])))
 
+        self._serial_number = ''
+        self.really_get_unique_id()
+        append_topic_serial = True
+        # Create and advertise publishers for each connected sensor
+        topic_basename = "optoforce_"
+        if append_topic_serial:
+            topic_basename += self._serial_number + '_'
         for i in range(self._nb_sensors):
-            self._publishers.append(rospy.Publisher("optoforce_" +
+            self._publishers.append(rospy.Publisher(topic_basename +
                                                     str(self._starting_index + i),
                                                     WrenchStamped,
                                                     queue_size=100))
             wrench = WrenchStamped()
-            wrench.header.frame_id = "optoforce_" + str(self._starting_index + i)
+            wrench.header.frame_id = topic_basename + str(self._starting_index + i)
             self._wrenches.append(wrench)
 
         # Advertise a service to retrieve the unique ID of the sensor
-        self._service = rospy.Service('get_unique_id', std_srvs.srv.Empty, self.get_unique_id)
-
-        # Tree representation of all accepted headers.
-        # Leaf nodes are the lenght of the frame associated with the header
-        self._headers = {
-            170:
-                {0:
-                    {18:
-                        {8: 14}},
-                7:
-                    {8:
-                        {10: 16,
-                        16: 34,
-                        28: 22}}}}
+        self._service = rospy.Service('get_unique_id', std_srvs.srv.Empty,
+                                      self.get_unique_id)
 
     def config(self):
         speed = self._speed_values[rospy.get_param("~speed", "100Hz")]
@@ -179,14 +188,11 @@ class OptoforceDriver(object):
                 header = struct.unpack_from('>4B', frame)
                 response_arrived = (header == (170, 0, 18, 8))
             else:
-                rospy.logwarn("We got data that could not be decoded: " + frame)
+                rospy.loginfo("We got data that could not be decoded: " + frame)
 
         # Parse the frame to retrieve the serial number
         if response_arrived:
-            serial_number = self._decode(frame)
-            self._topic_suffix = serial_number
-        else:
-            self._topic_suffix = self._starting_index
+            self._serial_number = ''.join(self._decode(frame)).strip()
 
     def run(self):
         """
@@ -200,7 +206,7 @@ class OptoforceDriver(object):
                 if isinstance(data, OptoforceData):
                     self._publish(data)
             else:
-                rospy.logwarn("We got data that could not be decoded: " + frame)
+                rospy.loginfo("We got data that could not be decoded: " + frame)
 
     def _detect_header(self, tree):
         raw_byte = self._serial.read()
