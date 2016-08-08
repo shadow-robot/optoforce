@@ -126,7 +126,11 @@ class OptoforceDriver(object):
         topic_basename = "optoforce_"
         if self._append_topic_serial:
             serial_number = self.get_serial_number()
-            topic_basename += serial_number + '_'
+            if serial_number:
+                topic_basename += serial_number + '_'
+            else:
+                rospy.logwarn("Cannot get the serial number from the sensor. "
+                           "Falling back to the basinc name scheme")
 
         for i in range(self._nb_sensors):
             self._publishers.append(rospy.Publisher(topic_basename +
@@ -181,8 +185,9 @@ class OptoforceDriver(object):
                               + self._frame_to_string(frame))
 
         # Parse the frame to retrieve the serial number
-        if response_arrived:
-            return ''.join(self._decode(frame)).strip()
+        serial_number = self._decode(frame)
+        if response_arrived and serial_number:
+            return ''.join(serial_number).strip()
         else:
             return None
 
