@@ -92,7 +92,7 @@ class OptoforceDriver(object):
         sensor_type_param = rospy.get_param("~type", "m-ch/3-axis")
         self._sensor_type = self._daq_type_map[sensor_type_param]
         self._starting_index = rospy.get_param("~starting_index", 0)
-        self._append_topic_serial = rospy.get_param("~append_serial_number", False)
+        self._append_topic_serial = rospy.get_param("~append_serial_number", "false")
         self._publishers = []
         self._wrenches = []
         self._nb_sensors = 0
