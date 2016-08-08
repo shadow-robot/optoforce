@@ -235,17 +235,13 @@ class OptoforceDriver(object):
     def _decode(self, frame):
         """
         Decodes a sensor frame
-        It assumes that we get an entire frame and nothing else from serial.read. This assumption simplifies the code
-        and it seems to be always true for the moment.
+        It assumes that we get an entire frame and nothing else from serial.read.
+
         @param frame - byte frame from the sensor
         """
         if not self._is_checksum_valid(frame):
-            rospy.logwarn("Bad checksum in frame:\n" + frame)
-            # This is a trick to recover the frame synchronisation without having to implement a state machine.
-            # We are assuming that the reception of a config response frame (of shorter length) is the cause
-            # of the loss of frame synchronisation
-            # This method would be wrong if the cause were an actual transmission error, but this doesn't
-            # seem to happen.
+            rospy.logwarn("Bad checksum in frame: "
+                          + self._frame_to_string(frame))
             return None
 
         header = struct.unpack_from('>4B', frame)
