@@ -31,6 +31,9 @@
   <!-- Numerical index of the first sensor. The rest (if this is a multi-channel DAC)
   will get the consecutive numbers -->
   <arg name="starting_index" default="0"/>
+  <!-- When append_serial_number is set to true, the topic on which wrenches are
+  published will be named after the sensor's serial number. -->
+  <arg name="append_serial_number" default="true"/>
   <!-- Direction of scaling file -->
   <arg name="scaling_file" default="$(find optoforce)/config/multi_channel_3_axis_generic_scale.yaml"/>
 
@@ -41,6 +44,7 @@
     <param name="zero" value="$(arg zero)"/>
     <param name="type" value="$(arg type)"/>
     <param name="starting_index" value="$(arg starting_index)"/>
+    <param name="append_serial_number" value="$(arg append_serial_number)"/>
     <rosparam command="load" file="$(arg scaling_file)"/>
   </node>
 </launch>
