@@ -256,7 +256,18 @@ class OptoforceDriver(object):
                 force_axes = []
                 for a in range(self._nb_axis):
                     offset += 2
-                    val = struct.unpack_from('>h', frame, offset)[0]
+                    try:
+                        val = struct.unpack_from('>h', frame, offset)[0]
+                    except struct.error as e:
+                        message = ("Problem unpacking frame "
+                                   + self._frame_to_string(frame)
+                                   + " at offset " + str(offset) + ".")
+                        rospy.logfatal(message +" Please "
+                                       + "check that you set the right numbers "
+                                       + "of channels and axes.")
+                        rospy.signal_shutdown(message)
+                        sys.exit(1)
+
                     # TODO Convert to Newtons (needs sensitivity report)
                     val = float(val) / self._scale[s][a]
                     force_axes.append(val)
