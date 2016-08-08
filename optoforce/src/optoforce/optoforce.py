@@ -203,6 +203,15 @@ class OptoforceDriver(object):
 
 
     def _detect_header(self, tree):
+        """
+        Read from the serial port and give back the latest data frame.
+
+        To do so, we compare the data received with the next possible byte of
+        the headers descriped in tree. This method should be called with
+        self._headers. It will then recurse on subtrees of self._headers
+
+        @param tree - dictionary structure representing the next expected bytes
+        """
         try:
             raw_byte = self._serial.read()
             byte = struct.unpack('>B', raw_byte)[0]
@@ -302,6 +311,12 @@ class OptoforceDriver(object):
 
     @staticmethod
     def _frame_to_string(frame):
+        """
+        Build a string representing the given frame for pretty printing.
+
+        @param frame - array of bytes (or string) represnting a frame
+        @return human-readable string representation of the frame
+        """
         return str(struct.unpack('>'+str(len(frame))+'B', frame))
 
 if __name__ == '__main__':
