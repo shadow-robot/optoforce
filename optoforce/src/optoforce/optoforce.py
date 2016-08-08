@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import array
 import serial
 import struct
@@ -69,8 +70,13 @@ class OptoforceDriver(object):
         """
         Initialize OptoforceDriver object
         """
-        port = rospy.get_param("~port", "/dev/ttyACM0")
-        self._serial = serial.Serial(port, 1000000, timeout=None)
+        try:
+            port = rospy.get_param("~port", "/dev/ttyACM0")
+            self._serial = serial.Serial(port, 1000000, timeout=None)
+        except serial.SerialException as e:
+            rospy.logfatal(e.message)
+            rospy.signal_shutdown("Serial connection failure")
+            sys.exit(1)
         sensor_type_param = rospy.get_param("~type", "m-ch/3-axis")
         self._sensor_type = self._daq_type_map[sensor_type_param]
         self._starting_index = rospy.get_param("~starting_index", 0)
