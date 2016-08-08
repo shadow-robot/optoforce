@@ -151,7 +151,8 @@ class OptoforceDriver(object):
         checksum = self._checksum(frame, len(frame))
         offset = len(header) + 3
         struct.pack_into('>H', frame, offset, checksum)
-        rospy.logdebug(binascii.hexlify(frame))
+        rospy.logdebug("Sending configuration frame "
+                       + self._frame_to_string(frame))
 
         self._serial.write(frame)
 
@@ -175,7 +176,8 @@ class OptoforceDriver(object):
                 header = struct.unpack_from('>4B', frame)
                 response_arrived = (header == (170, 0, 18, 8))
             else:
-                rospy.loginfo("We got data that could not be decoded: " + frame)
+                rospy.logdebug("We got data that could not be decoded: "
+                              + self._frame_to_string(frame))
 
         # Parse the frame to retrieve the serial number
         if response_arrived:
@@ -195,7 +197,9 @@ class OptoforceDriver(object):
                 if isinstance(data, OptoforceData):
                     self._publish(data)
             else:
-                rospy.loginfo("We got data that could not be decoded: " + frame)
+                rospy.logdebug("We got data that could not be decoded: "
+                              + self._frame_to_string(frame))
+
 
     def _detect_header(self, tree):
         raw_byte = self._serial.read()
@@ -287,6 +291,10 @@ class OptoforceDriver(object):
 
         checksum = struct.unpack_from('>H', frame, offset)[0]
         return calculated == checksum
+
+    @staticmethod
+    def _frame_to_string(frame):
+        return str(struct.unpack('>'+str(len(frame))+'B', frame))
 
 if __name__ == '__main__':
     rospy.init_node("optoforce")
