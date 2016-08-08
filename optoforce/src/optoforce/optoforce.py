@@ -18,6 +18,7 @@
 import sys
 import array
 import serial
+import select # used by serial, needed to handle exceptions
 import struct
 import binascii
 import rospy
@@ -202,16 +203,23 @@ class OptoforceDriver(object):
 
 
     def _detect_header(self, tree):
-        raw_byte = self._serial.read()
-        byte = struct.unpack('>B', raw_byte)[0]
+        try:
+            raw_byte = self._serial.read()
+            byte = struct.unpack('>B', raw_byte)[0]
 
-        for header_byte, subtree in tree.items():
-            if byte == header_byte:
-                if type(subtree) is int:
-                    return (True, raw_byte + self._serial.read(subtree-4))
-                else:
-                    success, next_bytes = self._detect_header(subtree)
-                    return (success, raw_byte + next_bytes)
+            for header_byte, subtree in tree.items():
+                if byte == header_byte:
+                    if type(subtree) is int:
+                        return (True, raw_byte + self._serial.read(subtree-4))
+                    else:
+                        success, next_bytes = self._detect_header(subtree)
+                        return (success, raw_byte + next_bytes)
+        except select.error as e:
+            # Error code 4, meaning 'Interrupted system call'
+            # It is raised when reading from the serial connexion and ROS tries
+            # to stop the node.
+            if e[0] != 4:
+                raise
 
         return (False, '')
 
