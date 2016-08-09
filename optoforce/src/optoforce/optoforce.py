@@ -164,6 +164,8 @@ class OptoforceDriver(object):
     def get_serial_number(self):
         """
         Ask the sensor for its serial number
+
+        @return the serial number as a string, or None if the request failed
         """
         config_length = 6
         offset = 0
