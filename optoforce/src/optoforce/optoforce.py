@@ -83,8 +83,8 @@ class OptoforceDriver(object):
         """
         Initialize OptoforceDriver object
         """
+        port = rospy.get_param("~port", "/dev/ttyACM0")
         try:
-            port = rospy.get_param("~port", "/dev/ttyACM0")
             self._serial = serial.Serial(port, 1000000, timeout=None)
         except serial.SerialException as e:
             rospy.logfatal(e.message)
@@ -128,6 +128,8 @@ class OptoforceDriver(object):
             serial_number = self.get_serial_number()
             if serial_number:
                 topic_basename += serial_number + '_'
+                rospy.loginfo("Sensor " + serial_number + " was found at port "
+                              + port)
             else:
                 rospy.logwarn("Cannot get the serial number from the sensor. "
                            "Falling back to the basinc name scheme")
