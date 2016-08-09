@@ -284,10 +284,12 @@ class OptoforceDriver(object):
         elif header == (170, 0, 18, 8):
             offset = 4
             serial_number = struct.unpack_from('>8c', frame, offset)
-            rospy.logdebug("We have the serial number " + ''.join(serial_number))
+            rospy.logdebug("We have the serial number "
+                           + ''.join(serial_number))
             return serial_number
         else:
-            rospy.logwarn("I can't recognize the frame's header:\n" + frame)
+            rospy.logwarn("I can't recognize the frame's header:\n"
+                          + self._frame_to_string(frame))
             return None
 
     def _publish(self, data):
