@@ -4,7 +4,9 @@
 
   <include file="$(find optoforce)/launch/optoforce.launch"/>
 
-  <include if="$(arg rviz)" file="$(find optoforce)/launch/rviz.launch"/>
+  <include if="$(arg rviz)" file="$(find optoforce)/launch/rviz.launch">
+    <arg name="h1_hand" value="$(arg h1)"/>
+  </include>
 
   <!-- Static transforms form Optoforce sensor to finger tip -->
   <group unless="$(arg h1)">

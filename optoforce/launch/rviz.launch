@@ -1,3 +1,12 @@
 <launch>
+
+  <arg name="h1_hand" default="false"/>
+  <!-- If we have h1 run different configuration than the default -->
+  <group if="$(arg h1_hand)">
+    <node name="rviz_optoforce" pkg="rviz" type="rviz" args="-d $(find optoforce)/config/optoforce_h1_hand.rviz" />
+  </group>
+
+  <group unless="$(arg h1_hand)">
     <node name="rviz_optoforce" pkg="rviz" type="rviz" args="-d $(find optoforce)/config/optoforce_hand.rviz" />
+  </group>
 </launch>
