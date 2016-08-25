@@ -18,7 +18,7 @@
 import sys
 import array
 import serial
-import select # used by serial, needed to handle exceptions
+import select # needed to handle exceptions raised by the serial module
 import struct
 import binascii
 import rospy
