@@ -110,6 +110,9 @@ class OptoforceDriver(object):
         """
         Initialize OptoforceDriver object
 
+        Raises serial.SerialException if there is a problem connecting to the
+        serial port.
+
         @port path to the device's port
         @sensor_type string representing the sensor type (one or more channels,
             3 or 6 axes)
@@ -220,7 +223,8 @@ class OptoforceDriver(object):
                         return raw_byte + self._serial.read(subtree-4)
                     else:
                         next_bytes = self._detect_header(subtree)
-                        return raw_byte + next_bytes
+                        if next_bytes is not None:
+                            return raw_byte + next_bytes
 
             raise OptoforceWarning("I can't recognize a header in this data: "
                           + self._frame_to_string(raw_byte))
@@ -231,9 +235,7 @@ class OptoforceDriver(object):
             if e[0] != 4:
                 raise
         except serial.serialutil.SerialException as e:
-            # Error code 4, meaning 'Interrupted system call'
-            # It is raised when reading from the serial connexion and ROS tries
-            # to stop the node.
+            # Same as previous except
             if str(e) != "read failed: (4, 'Interrupted system call')":
                 raise
 
