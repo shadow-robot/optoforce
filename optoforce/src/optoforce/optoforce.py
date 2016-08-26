@@ -188,12 +188,7 @@ class OptoforceDriver(object):
         """
         frame = self._detect_header(self._headers)
 
-        data = self._decode(frame)
-        if isinstance(data, OptoforceData):
-            print '.',
-        elif isinstance(data, OptoforceSerialNumber):
-            print("\nGot the serial number" + str(data))
-
+        return self._decode(frame)
 
     def _detect_header(self, tree):
         """
