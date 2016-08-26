@@ -23,14 +23,6 @@ import select # needed to handle exceptions raised by the serial module
 import struct
 import binascii
 
-def get_from_dict(dictionary, key, key_name="key"):
-    try:
-        return dictionary[key]
-    except KeyError:
-        raise OptoforceError("The " + key_name + " '" + str(key) +
-            "' is not part of the accepted values: " +
-            ", ".join(dictionary.keys()))
-
 class OptoforceData:
     def __init__(self):
         self.status = None
@@ -121,7 +113,7 @@ class OptoforceDriver(object):
         self._logger.addHandler(logging.NullHandler())
 
         self._serial = serial.Serial(port, 1000000, timeout=None)
-        self._sensor_type = get_from_dict(self._daq_type_map, sensor_type,
+        self._sensor_type = self._get_from_dict(self._daq_type_map, sensor_type,
                                           "sensor type")
         self._starting_index = starting_index
         self._nb_sensors = 0
@@ -159,8 +151,8 @@ class OptoforceDriver(object):
         @filter filtering frequency, as a string. Default: "15Hz"
         @zero boolean telling whether the sensor value should be zeroed.
         """
-        speed = get_from_dict(self._speed_values, speed, "speed (frequency)")
-        filter = get_from_dict(self._filter_values, filter, "filter")
+        speed = self._get_from_dict(self._speed_values, speed, "speed (frequency)")
+        filter = self._get_from_dict(self._filter_values, filter, "filter")
         zero = self._zeroing_values[zero == True]
 
         config_length = 9
@@ -326,3 +318,12 @@ class OptoforceDriver(object):
         @return human-readable string representation of the frame
         """
         return str(struct.unpack('>'+str(len(frame))+'B', frame))
+
+    @staticmethod
+    def _get_from_dict(dictionary, key, key_name="key"):
+        try:
+            return dictionary[key]
+        except KeyError:
+            raise OptoforceError("The " + key_name + " '" + str(key) +
+                "' is not part of the accepted values: " +
+                ", ".join(dictionary.keys()))
