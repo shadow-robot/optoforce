@@ -39,6 +39,9 @@ class OptoforceSerialNumber:
     def __init__(self, serial_number=None):
         self.serial_number = serial_number
 
+    def __str__(self):
+        return ''.join(self.serial_number).strip()
+
 class OptoforceError(Exception):
     def __init__(self, message=""):
         self.message = str(message)
@@ -192,7 +195,7 @@ class OptoforceDriver(object):
         if isinstance(data, OptoforceData):
             print '.',
         elif isinstance(data, OptoforceSerialNumber):
-            print("\nGot the serial number" + str(data.serial_number))
+            print("\nGot the serial number" + str(data))
 
 
     def _detect_header(self, tree):
