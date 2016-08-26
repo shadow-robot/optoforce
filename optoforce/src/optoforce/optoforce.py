@@ -182,25 +182,6 @@ class OptoforceDriver(object):
         struct.pack_into('>6B', frame, offset, 171, 0, 18, 8, 0, 197)
         self._serial.write(frame)
 
-    def read_serial_number(self):
-        # Listen for response frames until the right one is found
-        response_arrived = False
-        while not rospy.is_shutdown() and not response_arrived:
-            frame_received, frame = self._detect_header(self._headers)
-            if frame_received:
-                header = struct.unpack_from('>4B', frame)
-                response_arrived = (header == (170, 0, 18, 8))
-            else:
-                OptoforceWarning("We got data that could not be decoded: "
-                              + self._frame_to_string(frame))
-
-        # Parse the frame to retrieve the serial number
-        serial_number = self._decode(frame)
-        if response_arrived and serial_number:
-            return ''.join(serial_number).strip()
-        else:
-            return None
-
     def read(self):
         """
         Read the next incoming frame, if any.
