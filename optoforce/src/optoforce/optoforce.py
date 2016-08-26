@@ -116,8 +116,6 @@ class OptoforceDriver(object):
         self._sensor_type = self._get_from_dict(self._daq_type_map, sensor_type,
                                           "sensor type")
         self._starting_index = starting_index
-        self._nb_sensors = 0
-        self._nb_axis = 0
 
         # Set the values for _nb_sensors and _nb_axis based on the sensor at use
         if self._sensor_type == self._OPTOFORCE_TYPE_31:
