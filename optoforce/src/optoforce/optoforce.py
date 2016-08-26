@@ -16,6 +16,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import logging
 import array
 import serial
 import select # needed to handle exceptions raised by the serial module
@@ -51,9 +52,6 @@ class OptoforceError(Exception):
 
     def __repr__(self):
         return "OptoforceError(" + self.message + ")"
-
-class OptoforceWarning(OptoforceError):
-    pass
 
 class OptoforceDriver(object):
     """
@@ -119,6 +117,9 @@ class OptoforceDriver(object):
         @starting_index initial value for the topic's suffix; if not set, will
             default to 0, meaning the topic name will be "/optoforce_0"
         """
+        self._logger = logging.getLogger(__name__)
+        self._logger.addHandler(logging.NullHandler())
+
         self._serial = serial.Serial(port, 1000000, timeout=None)
         self._sensor_type = get_from_dict(self._daq_type_map, sensor_type,
                                           "sensor type")
@@ -174,6 +175,9 @@ class OptoforceDriver(object):
         offset = len(header) + 3
         struct.pack_into('>H', frame, offset, checksum)
 
+        self._logger.debug("Sending configuration frame "
+                           + self._frame_to_string(frame))
+
         self._serial.write(frame)
 
     def request_serial_number(self):
@@ -226,7 +230,7 @@ class OptoforceDriver(object):
                         if next_bytes is not None:
                             return raw_byte + next_bytes
 
-            raise OptoforceWarning("I can't recognize a header in this data: "
+            self._logger.debug("I can't recognize a header in this data: "
                           + self._frame_to_string(raw_byte))
         except select.error as e:
             # Error code 4, meaning 'Interrupted system call'
@@ -251,7 +255,7 @@ class OptoforceDriver(object):
         if frame is None:
             return None
         if not self._is_checksum_valid(frame):
-            OptoforceError("Bad checksum in frame: "
+            self._logger.error("Bad checksum in frame: "
                           + self._frame_to_string(frame))
             return None
 
@@ -285,9 +289,11 @@ class OptoforceDriver(object):
         elif header == (170, 0, 18, 8):
             offset = 4
             serial_number = struct.unpack_from('>8c', frame, offset)
+            self._logger.debug("The sensor has the serial number "
+                               + ''.join(serial_number).strip())
             return OptoforceSerialNumber(serial_number)
         else:
-            OptoforceError("I can't recognize the header of frame: "
+            slef._logger.error("I can't recognize the header of frame: "
                           + self._frame_to_string(frame))
             return None
 
@@ -332,6 +338,25 @@ if __name__ == '__main__':
     signal_handle = signal_handler()
     signal.signal(signal.SIGINT, signal_handle)
 
+    # Configure logging
+
+    # create logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    # create formatter
+    formatter = logging.Formatter('%(asctime)s :: %(name)s :: %(levelname)s :: %(message)s')
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
     port = "/dev/ttyACM0"
     sensor_type = "s-ch/3-axis"
     scale = [[100, 100, 100]]
@@ -341,5 +366,5 @@ if __name__ == '__main__':
     while not signal_handle.stop:
         try:
             driver.read()
-        except (OptoforceError, OptoforceError) as e:
+        except (OptoforceError) as e:
             print(e.message)
