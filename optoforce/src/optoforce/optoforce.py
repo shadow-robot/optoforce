@@ -140,6 +140,12 @@ class OptoforceDriver(object):
                 raise ValueError("Number of axis [%i] and scaling factors "
                     "[%i] given doesn't match." % (self._nb_axis, len(self._scale[x])))
 
+    def nb_sensors(self):
+        return self._nb_sensors
+
+    def nb_axis(self):
+        return self._nb_axis
+
     def config(self, speed = "100Hz", filter = "15Hz", zero = False):
         """
         Set the sensor's configuration.
