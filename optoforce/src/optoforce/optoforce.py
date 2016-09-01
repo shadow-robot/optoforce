@@ -103,11 +103,14 @@ class OptoforceDriver(object):
         Raises serial.SerialException if there is a problem connecting to the
         serial port.
 
-        @port path to the device's port
-        @sensor_type string representing the sensor type (one or more channels,
-            3 or 6 axes)
-        @starting_index initial value for the topic's suffix; if not set, will
-            default to 0, meaning the topic name will be "/optoforce_0"
+        @param port path to the device's port
+        @param sensor_type string representing the sensor type (one or more
+            channels, 3 or 6 axes)
+        @param starting_index initial value for the topic's suffix; if not set,
+            will default to 0, meaning the topic name will be "/optoforce_0"
+
+        @raise serial.SerialException in case the device can not be found or can
+            not be configured
         """
         self._logger = logging.getLogger(__name__)
         self._logger.addHandler(logging.NullHandler())

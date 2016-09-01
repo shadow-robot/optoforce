@@ -46,7 +46,7 @@ class OptoforceNode(object):
             rospy.logfatal("Cannot connect to the sensor " + port
                            + (e.message if e.message else ''))
             rospy.signal_shutdown("Serial connection failure")
-            sys.exit(1)
+            raise
 
         # Create and advertise publishers for each connected sensor
         self._publishers = []
@@ -126,12 +126,15 @@ class ConnectPythonLoggingToROS(logging.Handler):
 
 if __name__ == '__main__':
     rospy.init_node("optoforce")
-    node = OptoforceNode()
+    try:
+        node = OptoforceNode()
+    except Exception as e:
+        rospy.logfatal("Caught exception: " + str(e))
+    else:
+        #reconnect logging calls which are children of this to the ros log system
+        logging.getLogger('optoforce').addHandler(ConnectPythonLoggingToROS())
+        #logs sent to children of trigger with a level >= this will be redirected to ROS
+        logging.getLogger('optoforce').setLevel(logging.DEBUG)
 
-    #reconnect logging calls which are children of this to the ros log system
-    logging.getLogger('optoforce').addHandler(ConnectPythonLoggingToROS())
-    #logs sent to children of trigger with a level >= this will be redirected to ROS
-    logging.getLogger('optoforce').setLevel(logging.DEBUG)
-
-    node.config()
-    node.run()
+        node.config()
+        node.run()
