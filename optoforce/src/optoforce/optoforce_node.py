@@ -16,11 +16,11 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import logging
 import optoforce
 import serial # required to handle exceptions raised in the optoforce module
 import rospy
 from geometry_msgs.msg import WrenchStamped
-
 
 class OptoforceNode(object):
     """
@@ -102,8 +102,34 @@ class OptoforceNode(object):
                 self._wrenches[i].wrench.torque.z = data.force[i][5]
             self._publishers[i].publish(self._wrenches[i])
 
+class ConnectPythonLoggingToROS(logging.Handler):
+    """
+
+    Source: https://gist.github.com/nzjrs/8712011
+    """
+
+    MAP = {
+        logging.DEBUG:rospy.logdebug,
+        logging.INFO:rospy.loginfo,
+        logging.WARNING:rospy.logwarn,
+        logging.ERROR:rospy.logerr,
+        logging.CRITICAL:rospy.logfatal
+    }
+
+    def emit(self, record):
+        try:
+            self.MAP[record.levelno]("%s: %s" % (record.name, record.msg))
+        except KeyError:
+            rospy.logerr("unknown log level %s LOG: %s: %s" % (record.levelno, record.name, record.msg))
+
 if __name__ == '__main__':
     rospy.init_node("optoforce")
     node = OptoforceNode()
+
+    #reconnect logging calls which are children of this to the ros log system
+    logging.getLogger('optoforce').addHandler(ConnectPythonLoggingToROS())
+    #logs sent to children of trigger with a level >= this will be redirected to ROS
+    logging.getLogger('optoforce').setLevel(logging.DEBUG)
+
     node.config()
     node.run()
