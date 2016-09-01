@@ -104,6 +104,8 @@ class OptoforceNode(object):
 
 class ConnectPythonLoggingToROS(logging.Handler):
     """
+    Class interfacing logs using Python's standard logging facility and ROS's
+    way of logging. It is meant to be used as a Handler for the logging module.
 
     Source: https://gist.github.com/nzjrs/8712011
     """
