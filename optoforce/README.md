@@ -10,9 +10,9 @@ ROS driver for the [Optoforce sensor](http://optoforce.com/3dsensor/).
 
 ## Driver description
 
-The driver relies on the pySerial library to get data from the sensors through USB.
+The driver relies on the pySerial library to get data from the sensors through USB. The module optoforce is completely independant from ROS and can be used as such.
 
-It publishes a geometry_msgs/WrenchStamped for every sensor.
+The ROS node built with this driver publishes messages of type `geometry_msgs/WrenchStamped` for every sensor.
 
 ## Installation of udev rule
 
