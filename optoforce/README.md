@@ -26,6 +26,9 @@ Now, next time an optoforce sensor is plugged in, it should appear in `/dev/` as
 
 > **Note:** The path to give to the optoforce node has to be adapted.
 
+
+> **Note:** Should there be a problem getting the serial number, a random number will be used instead of the serial number.
+
 ## Quickstart
 
 Have a look at `optoforce.launch` for the node's parameters and their values.
