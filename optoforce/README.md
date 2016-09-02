@@ -14,6 +14,17 @@ The driver relies on the pySerial library to get data from the sensors through U
 
 It publishes a geometry_msgs/WrenchStamped for every sensor.
 
+## Installation of udev rule
+
+If you want the optoforce sensors to be named in `/dev/` using their serial number, like `/dev/optoforce_ISE174`, you'll want to do the following steps.
+
+copy `optoforce.rules` to `/etc/udev/rules.d/`. Then, open this file and replace `PATH/TO` with the actual path to the optoforce node.
+
+Also make sure that the file `src/optoforce/get_serial.py` has execution rights for all users.
+
+Now, next time an optoforce sensor is plugged in, it should appear in `/dev/` as `optoforce_SERIAL` where `SERIAL` is the actual sensor's serial number.
+
+> **Note:** The path to give to the optoforce node has to be adapted.
 
 ## Quickstart
 
