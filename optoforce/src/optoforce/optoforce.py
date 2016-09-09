@@ -271,7 +271,7 @@ class OptoforceDriver(object):
                         message = ("Problem unpacking frame "
                                    + self._frame_to_string(frame)
                                    + " at offset " + str(offset) + ".")
-                        OptoforceError(message +" Please "
+                        raise OptoforceError(message +" Please "
                                        + "check that you set the right numbers "
                                        + "of channels and axes.")
 
