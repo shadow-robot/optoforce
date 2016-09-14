@@ -106,6 +106,10 @@ class OptoforceDriver(object):
         @param port path to the device's port
         @param sensor_type string representing the sensor type (one or more
             channels, 3 or 6 axes)
+        @param scale array of which the first dimension is for each sensor and
+            the second for each axis of a sensor. For instance, with a
+            two-channel  three-axisforce sensor:
+                [[150, 75, 84], [254, 258, 275]]
         @param starting_index initial value for the topic's suffix; if not set,
             will default to 0, meaning the topic name will be "/optoforce_0"
 
