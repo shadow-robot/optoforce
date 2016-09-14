@@ -82,7 +82,7 @@ class OptoforceDriver(object):
                        True: 255}
 
     # Tree representation of all accepted headers.
-    # Leaf nodes are the lenght of the frame associated with the header
+    # Leaf nodes are the length of the frame associated with the header
     _headers = {170:
                    {0:
                        {18:
