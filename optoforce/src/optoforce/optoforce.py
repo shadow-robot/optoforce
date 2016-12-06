@@ -16,19 +16,34 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import logging
 import array
 import serial
+import select # needed to handle exceptions raised by the serial module
 import struct
 import binascii
-import rospy
-from geometry_msgs.msg import WrenchStamped
-
 
 class OptoforceData:
     def __init__(self):
         self.status = None
         self.force = []
 
+class OptoforceSerialNumber:
+    def __init__(self, serial_number=None):
+        self.serial_number = serial_number
+
+    def __str__(self):
+        return ''.join(self.serial_number).strip()
+
+class OptoforceError(Exception):
+    def __init__(self, message=""):
+        self.message = str(message)
+
+    def __str__(self):
+        return self.message
+
+    def __repr__(self):
+        return "OptoforceError(" + self.message + ")"
 
 class OptoforceDriver(object):
     """
@@ -66,25 +81,50 @@ class OptoforceDriver(object):
     _zeroing_values = {False: 0,
                        True: 255}
 
-    def __init__(self):
+    # Tree representation of all accepted headers.
+    # Leaf nodes are the length of the frame associated with the header
+    _headers = {170:
+                   {0:
+                       {18:
+                           {8: 14}},
+                   7:
+                       {8:
+                           {10: 16,
+                           16: 34,
+                       28: 22}}}}
+
+    def __init__(self, port,
+                sensor_type,
+                scale,
+                starting_index = 0):
         """
         Initialize OptoforceDriver object
+
+        Raises serial.SerialException if there is a problem connecting to the
+        serial port.
+
+        @param port path to the device's port
+        @param sensor_type string representing the sensor type (one or more
+            channels, 3 or 6 axes)
+        @param scale array of which the first dimension is for each sensor and
+            the second for each axis of a sensor. For instance, with a
+            two-channel  three-axisforce sensor:
+                [[150, 75, 84], [254, 258, 275]]
+        @param starting_index initial value for the topic's suffix; if not set,
+            will default to 0, meaning the topic name will be "/optoforce_0"
+
+        @raise serial.SerialException in case the device can not be found or can
+            not be configured
         """
-        try:
-            port = rospy.get_param("~port", "/dev/ttyACM0")
-            self._serial = serial.Serial(port, 1000000, timeout=None)
-        except serial.SerialException as e:
-            rospy.logfatal(e.message)
-            rospy.signal_shutdown("Serial connection failure")
-            sys.exit(1)
-        sensor_type_param = rospy.get_param("~type", "m-ch/3-axis")
-        self._sensor_type = self._daq_type_map[sensor_type_param]
-        self._starting_index = rospy.get_param("~starting_index", 0)
-        self._publishers = []
-        self._wrenches = []
-        self._nb_sensors = 0
-        self._nb_axis = 0
-        
+        self._logger = logging.getLogger(__name__)
+        self._logger.addHandler(logging.NullHandler())
+
+        self._serial = serial.Serial(port, 1000000, timeout=None)
+        self._sensor_type = self._get_from_dict(self._daq_type_map, sensor_type,
+                                          "sensor type")
+        self._starting_index = starting_index
+
+        # Set the values for _nb_sensors and _nb_axis based on the sensor at use
         if self._sensor_type == self._OPTOFORCE_TYPE_31:
             self._nb_sensors = 1
             self._nb_axis = 3
@@ -94,30 +134,41 @@ class OptoforceDriver(object):
         elif self._sensor_type == self._OPTOFORCE_TYPE_64:
             self._nb_sensors = 1
             self._nb_axis = 6
-            
-        self._scale = rospy.get_param("~scale")
+
+        # Retrieve and check the scaling factors
+        self._scale = scale
 
         if len(self._scale) != self._nb_sensors:
-            raise ValueError("Number of sensors [%i]and scaling factor vectors [%i] given doesn't match." % (self._nb_sensors, len(self._scale))) 
-        else:
-            for x in range(self._nb_sensors):
-                if len(self._scale[x]) != self._nb_axis:
-                    raise ValueError("Number of axis [%i] and scaling factors [%i] given doesn't match." % (self._nb_axis, len(self._scale[x]))) 
+            raise ValueError("Number of sensors [%i] and scaling factor vectors "
+                "[%i] given doesn't match." % (self._nb_sensors, len(self._scale)))
 
-        for i in range(self._nb_sensors):
-            self._publishers.append(rospy.Publisher("optoforce_" + str(self._starting_index + i), WrenchStamped,
-                                                    queue_size=100))
-            wrench = WrenchStamped()
-            wrench.header.frame_id = "optoforce_" + str(self._starting_index + i)
-            self._wrenches.append(wrench)
+        for x in range(self._nb_sensors):
+            if len(self._scale[x]) != self._nb_axis:
+                raise ValueError("Number of axis [%i] and scaling factors "
+                    "[%i] given doesn't match." % (self._nb_axis, len(self._scale[x])))
 
-    def config(self):
-        speed = self._speed_values[rospy.get_param("~speed", "100Hz")]
-        filter = self._filter_values[rospy.get_param("~filter", "15Hz")]
-        zero = self._zeroing_values[rospy.get_param("~zero", "false")]
+    def nb_sensors(self):
+        return self._nb_sensors
+
+    def nb_axis(self):
+        return self._nb_axis
+
+    def config(self, speed = "100Hz", filter = "15Hz", zero = False):
+        """
+        Set the sensor's configuration.
+
+        @ speed string representing the frequency in Hz at which data is to be
+            produced. Default: "100Hz"
+        @filter filtering frequency, as a string. Default: "15Hz"
+        @zero boolean telling whether the sensor value should be zeroed.
+        """
+        speed = self._get_from_dict(self._speed_values, speed, "speed (frequency)")
+        filter = self._get_from_dict(self._filter_values, filter, "filter")
+        zero = self._zeroing_values[zero == True]
+
         config_length = 9
 
-        header = self._frame_header()
+        header = struct.pack('>4B', 170, 0, 50, 3)
         offset = 0
 
         frame = array.array('B', [0] * config_length)
@@ -126,66 +177,123 @@ class OptoforceDriver(object):
         checksum = self._checksum(frame, len(frame))
         offset = len(header) + 3
         struct.pack_into('>H', frame, offset, checksum)
-        rospy.logdebug(binascii.hexlify(frame))
+
+        self._logger.debug("Sending configuration frame "
+                           + self._frame_to_string(frame))
 
         self._serial.write(frame)
 
-    def run(self):
+    def request_serial_number(self):
         """
-        Runs the read loop.
+        Ask the sensor for its serial number
         """
-        while not rospy.is_shutdown():
-            s = self._serial.read(self._sensor_frame_length[self._sensor_type])
-            rospy.logdebug(binascii.hexlify(s))
-            data = self._decode(s)
-            if data:
-                self._publish(data)
+        config_length = 6
+        offset = 0
+
+        # Build the request frame and send it
+        frame = array.array('B', [0] * config_length)
+        struct.pack_into('>6B', frame, offset, 171, 0, 18, 8, 0, 197)
+        self._serial.write(frame)
+
+    def read(self):
+        """
+        Read the next incoming frame, if any.
+        """
+        frame = self._detect_header(self._headers)
+
+        return self._decode(frame)
+
+    def _detect_header(self, tree):
+        """
+        Read from the serial port and give back the latest data frame.
+
+        To do so, we compare the data received with the next possible byte of
+        the headers descriped in tree. This method should be called with
+        self._headers. It will then recurse on subtrees of self._headers
+
+        @param tree - dictionary structure representing the next expected bytes
+
+        @return the full frame, if any
+        """
+        try:
+            raw_byte = self._serial.read()
+            byte = struct.unpack('>B', raw_byte)[0]
+
+            for header_byte, subtree in tree.items():
+                if byte == header_byte:
+                    if type(subtree) is int:
+                        return raw_byte + self._serial.read(subtree-4)
+                    else:
+                        next_bytes = self._detect_header(subtree)
+                        if next_bytes is not None:
+                            return raw_byte + next_bytes
+
+            self._logger.debug("I can't recognize a header in this data: "
+                          + self._frame_to_string(raw_byte))
+        except select.error as e:
+            # Error code 4, meaning 'Interrupted system call'
+            # It is raised when reading from the serial connexion and ROS tries
+            # to stop the node.
+            if e[0] != 4:
+                raise
+        except serial.serialutil.SerialException as e:
+            # Same as previous except
+            if str(e) != "read failed: (4, 'Interrupted system call')":
+                raise
+
+        return None
 
     def _decode(self, frame):
         """
         Decodes a sensor frame
-        It assumes that we get an entire frame and nothing else from serial.read. This assumption simplifies the code
-        and it seems to be always true for the moment.
+        It assumes that we get an entire frame and nothing else from serial.read.
+
         @param frame - byte frame from the sensor
         """
+        if frame is None:
+            return None
         if not self._is_checksum_valid(frame):
-            rospy.logwarn("Bad checksum")
-            # This is a trick to recover the frame synchronisation without having to implement a state machine.
-            # We are assuming that the reception of a config response frame (of shorter length) is the cause
-            # of the loss of frame synchronisation
-            # This method would be wrong if the cause were an actual transmission error, but this doesn't
-            # seem to happen.
-            s = self._serial.read(self._config_response_frame_length)
+            self._logger.error("Bad checksum in frame: "
+                          + self._frame_to_string(frame))
             return None
 
-        data = OptoforceData()
-        offset = 6
-        data.status = struct.unpack_from('>H', frame, offset)[0]
+        header = struct.unpack_from('>4B', frame)
 
-        for s in range(self._nb_sensors):
-            force_axes = []
-            for a in range(self._nb_axis):
-                offset += 2
-                val = struct.unpack_from('>h', frame, offset)[0]
-                # TODO Convert to Newtons (needs sensitivity report)
-                val = float(val) / self._scale[s][a]
-                force_axes.append(val)
-            data.force.append(force_axes)
+        data_headers = [(170, 7, 8, 10), (170, 7, 8, 16), (170, 7, 8, 28)]
+        if header in data_headers:
+            data = OptoforceData()
+            offset = 6
+            data.status = struct.unpack_from('>H', frame, offset)[0]
 
-        return data
+            for s in range(self._nb_sensors):
+                force_axes = []
+                for a in range(self._nb_axis):
+                    offset += 2
+                    try:
+                        val = struct.unpack_from('>h', frame, offset)[0]
+                    except struct.error as e:
+                        message = ("Problem unpacking frame "
+                                   + self._frame_to_string(frame)
+                                   + " at offset " + str(offset) + ".")
+                        raise OptoforceError(message +" Please "
+                                       + "check that you set the right numbers "
+                                       + "of channels and axes.")
 
-    def _publish(self, data):
-        stamp = rospy.Time.now()
-        for i in range(self._nb_sensors):
-            self._wrenches[i].header.stamp = stamp
-            self._wrenches[i].wrench.force.x = data.force[i][0]
-            self._wrenches[i].wrench.force.y = data.force[i][1]
-            self._wrenches[i].wrench.force.z = data.force[i][2]
-            if self._nb_axis == 6:
-                self._wrenches[i].wrench.torque.x = data.force[i][3]
-                self._wrenches[i].wrench.torque.y = data.force[i][4]
-                self._wrenches[i].wrench.torque.z = data.force[i][5]
-            self._publishers[i].publish(self._wrenches[i])
+                    val = float(val) / self._scale[s][a]
+                    force_axes.append(val)
+                data.force.append(force_axes)
+
+            return data
+        elif header == (170, 0, 18, 8):
+            offset = 4
+            serial_number = struct.unpack_from('>8c', frame, offset)
+            self._logger.debug("The sensor has the serial number "
+                               + ''.join(serial_number).strip())
+            return OptoforceSerialNumber(serial_number)
+        else:
+            slef._logger.error("I can't recognize the header of frame: "
+                          + self._frame_to_string(frame))
+            return None
 
     @staticmethod
     def _checksum(frame, length):
@@ -208,12 +316,20 @@ class OptoforceDriver(object):
         return calculated == checksum
 
     @staticmethod
-    def _frame_header():
-        return struct.pack('>4B', 170, 0, 50, 3)
+    def _frame_to_string(frame):
+        """
+        Build a string representing the given frame for pretty printing.
 
+        @param frame - array of bytes (or string) represnting a frame
+        @return human-readable string representation of the frame
+        """
+        return str(struct.unpack('>'+str(len(frame))+'B', frame))
 
-if __name__ == '__main__':
-    rospy.init_node("optoforce")
-    driver = OptoforceDriver()
-    driver.config()
-    driver.run()
+    @staticmethod
+    def _get_from_dict(dictionary, key, key_name="key"):
+        try:
+            return dictionary[key]
+        except KeyError:
+            raise OptoforceError("The " + key_name + " '" + str(key) +
+                "' is not part of the accepted values: " +
+                ", ".join(dictionary.keys()))

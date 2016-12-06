@@ -1,0 +1,1 @@
+KERNEL=="ttyACM[0-9]", PROGRAM="/PATH/TO/optoforce/optoforce/src/optoforce/get_serial.py %k", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="000a", SYMLINK="%c", MODE="660"

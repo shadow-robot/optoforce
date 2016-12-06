@@ -34,7 +34,7 @@
   <!-- Direction of scaling file -->
   <arg name="scaling_file" default="$(find optoforce)/config/multi_channel_3_axis_generic_scale.yaml"/>
 
-  <node name="$(anon optoforce)" pkg="optoforce" type="optoforce.py" output="screen">
+  <node name="$(anon optoforce)" pkg="optoforce" type="optoforce_node.py" output="screen">
     <param name="port" value="$(arg port)"/>
     <param name="speed" value="$(arg speed)"/>
     <param name="filter" value="$(arg filter)"/>
