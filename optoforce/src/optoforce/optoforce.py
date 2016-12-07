@@ -90,8 +90,8 @@ class OptoforceDriver(object):
                    7:
                        {8:
                            {10: 16,
-                           16: 34,
-                       28: 22}}}}
+                           16: 22,
+                           28: 34}}}}
 
     def __init__(self, port,
                 sensor_type,
