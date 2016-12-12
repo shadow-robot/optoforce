@@ -14,6 +14,14 @@ The driver relies on the pySerial library to get data from the sensors through U
 
 The ROS node built with this driver publishes messages of type `geometry_msgs/WrenchStamped` for every sensor.
 
+## Add your user to the dialout group
+Add yourself to the group *dialout* in order to get access the serial port.
+You may use
+
+`sudo adduser $USER dialout`.
+
+You need to log-out/log-in to apply the changes.
+
 ## Installation of udev rule
 Why ? Thanks to this udev rule, the sensors' names will no longer depend on the order in which they are plugged in the computer. The names would look like `/dev/optoforce_ISE174`.
 
@@ -33,6 +41,16 @@ Now, next time an optoforce sensor is plugged in, it should appear in `/dev/` as
 Have a look at `optoforce.launch` for the node's parameters and their values.
 
 It also loads parameters from the `multi_channel_3_axis_generic_scale.yaml` file. They are ratios from raw data to Newton, as found in the sensor's sensitivity report. If you have a single channel force sensor, have a look at `single_channel_3_axis_generic_scale.yaml`.
+
+Example for Single-channel 3 axis force sensor [OptoForce OMD-45-FE-1000N FT](http://optoforce.com/3dsensor/):
+
+```
+roslaunch optoforce optoforce.launch 
+    type:=s-ch/3-axis 
+    scaling_file:='$(find optoforce)/config/single_channel_3_axis_generic_scale.yaml'
+```
+
+> **Note** The flash memory stick that comes with the sensor contains a linux application to visualize the data measured by the sensor: `DAQ material/USB/ODV/ODV_3D/LINUX/ODV3D_v1.6.6.tar.gz`. Unpack and run the application. The driver and the *OptoForce Data Visualization Software* can not be run at the same time because they use the same port.
 
 ### Shadow robot's hand
 
