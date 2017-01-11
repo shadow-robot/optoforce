@@ -18,7 +18,7 @@ The ROS node built with this driver publishes messages of type `geometry_msgs/Wr
 Add yourself to the group *dialout* in order to get access the serial port.
 You may use
 
-`sudo adduser $USER dialout`.
+`sudo usermod -aG $USER dialout`.
 
 You need to log-out/log-in to apply the changes.
 
