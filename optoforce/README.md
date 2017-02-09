@@ -17,7 +17,7 @@ The ROS node built with this driver publishes messages of type `geometry_msgs/Wr
 ## Installation of udev rule
 Why ? Thanks to this udev rule, the sensors' names will no longer depend on the order in which they are plugged in the computer. The names would look like `/dev/optoforce_ISE174`.
 
-To do so, copy `optoforce.rules` to `/etc/udev/rules.d/`. Then, open this file and replace `PATH/TO` with the actual path to the optoforce node.
+To do so, copy `optoforce.rules` to `/etc/udev/rules.d/`. Then, open this file and replace `PATH/TO` with the actual path to the `get_serial.py` file.
 
 Also make sure that the file `src/optoforce/get_serial.py` has execution rights for all users.
 
