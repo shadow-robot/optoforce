@@ -1,13 +1,26 @@
 <launch>
   <arg name="rviz" default="true"/>
+  <arg name="h1" default="false"/>
 
   <include file="$(find optoforce)/launch/optoforce.launch"/>
 
-  <include if="$(arg rviz)" file="$(find optoforce)/launch/rviz.launch"/>
+  <include if="$(arg rviz)" file="$(find optoforce)/launch/rviz.launch">
+    <arg name="h1_hand" value="$(arg h1)"/>
+  </include>
 
   <!-- Static transforms form Optoforce sensor to finger tip -->
-  <node name="optoforce_0_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_thtip optoforce_0 100" />
-  <node name="optoforce_1_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_fftip optoforce_1 100" />
-  <node name="optoforce_2_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_mftip optoforce_2 100" />
-  <node name="optoforce_3_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_rftip optoforce_3 100" />
+  <group unless="$(arg h1)">
+    <node name="optoforce_0_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_thtip optoforce_0 100" />
+    <node name="optoforce_1_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_fftip optoforce_1 100" />
+    <node name="optoforce_2_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_mftip optoforce_2 100" />
+    <node name="optoforce_3_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 rh_rftip optoforce_3 100" />
+  </group>
+
+  <!-- If you are using H1 hand publish different transformations -->
+  <group if="$(arg h1)">
+    <node name="optoforce_0_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 H1_F1_optoforce optoforce_0 100" />
+    <node name="optoforce_1_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 H1_F2_optoforce optoforce_1 100" />
+    <node name="optoforce_2_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 H1_F3_optoforce optoforce_2 100" />
+  </group>
+
 </launch>
