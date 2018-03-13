@@ -67,11 +67,11 @@ if __name__ == '__main__':
                 if isinstance(data, optoforce.OptoforceData):
                     print '.',
                 elif isinstance(data, optoforce.OptoforceSerialNumber):
-                    print("optoforce_" + str(data))
+                    print("optoforce/" + "optoforce_" + str(data))
                     sys.exit(0)
             except optoforce.OptoforceError:
                 pass
 
     import random as r
     r.seed()
-    print "optoforce_" + str(r.random())
+    print "optoforce/" + "optoforce_" + str(r.random())
