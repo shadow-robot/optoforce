@@ -3,7 +3,7 @@
 
   <include file="$(find optoforce)/launch/optoforce.launch"/>
 
-  <include if="$(arg rviz)" file="$(find optoforce)/launch/rviz.launch"/>
+  <include if="$(arg rviz)" file="$(find optoforce)/launch/hand_h_rviz.launch"/>
 
   <!-- Static transforms form Optoforce sensor to finger tip -->
   <node name="optoforce_0_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1.57 H0_F0_optoforce optoforce_0 100" />

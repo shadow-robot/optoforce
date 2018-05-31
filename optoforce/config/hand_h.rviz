@@ -8,9 +8,8 @@ Panels:
         - /Status1
         - /RobotModel1/Links1
         - /TF1/Frames1
-        - /Optoforce_0_th1/Status1
-      Splitter Ratio: 0.771812
-    Tree Height: 435
+      Splitter Ratio: 0.582352936
+    Tree Height: 428
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -19,7 +18,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679
+    Splitter Ratio: 0.588679016
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -39,7 +38,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.03
+        Line Width: 0.0299999993
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -60,115 +59,117 @@ Visualization Manager:
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
+        H0_F0_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F0_link_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F0_link_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F0_optoforce:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_F0_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F0_tip:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_F1_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F1_link_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F1_link_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F1_optoforce:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_F1_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F1_tip:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_F2_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F2_link_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F2_link_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F2_optoforce:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_F2_palm_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_F2_tip:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_base_attach:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        H0_insert_F0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_insert_F1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_insert_F2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        H0_wrist_attach:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         Link Tree Style: Links in Alphabetic Order
-        rh_ffdistal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_ffknuckle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_ffmiddle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_ffproximal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_fftip:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        rh_forearm:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_mfdistal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_mfknuckle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_mfmiddle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_mfproximal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_mftip:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        rh_palm:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_rfdistal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_rfknuckle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_rfmiddle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_rfproximal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_rftip:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        rh_thbase:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_thdistal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_thhub:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_thmiddle:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_thproximal:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rh_thtip:
+        fh_manipulator:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -194,13 +195,13 @@ Visualization Manager:
       Value: false
     - Class: rviz/Axes
       Enabled: false
-      Length: 0.3
+      Length: 0.300000012
       Name: Axes
-      Radius: 0.01
+      Radius: 0.00999999978
       Reference Frame: <Fixed Frame>
       Value: false
     - Alpha: 1
-      Arrow Width: 0.03
+      Arrow Width: 0.0299999993
       Class: rviz/WrenchStamped
       Enabled: true
       Force Arrow Scale: 0.5
@@ -210,9 +211,10 @@ Visualization Manager:
       Topic: /optoforce_0
       Torque Arrow Scale: 0.5
       Torque Color: 204; 204; 51
+      Unreliable: false
       Value: true
     - Alpha: 1
-      Arrow Width: 0.03
+      Arrow Width: 0.0299999993
       Class: rviz/WrenchStamped
       Enabled: true
       Force Arrow Scale: 0.5
@@ -222,9 +224,10 @@ Visualization Manager:
       Topic: /optoforce_1
       Torque Arrow Scale: 0.5
       Torque Color: 204; 204; 51
+      Unreliable: false
       Value: true
     - Alpha: 1
-      Arrow Width: 0.03
+      Arrow Width: 0.0299999993
       Class: rviz/WrenchStamped
       Enabled: true
       Force Arrow Scale: 0.5
@@ -234,23 +237,13 @@ Visualization Manager:
       Topic: /optoforce_2
       Torque Arrow Scale: 0.5
       Torque Color: 204; 204; 51
-      Value: true
-    - Alpha: 1
-      Arrow Width: 0.03
-      Class: rviz/WrenchStamped
-      Enabled: true
-      Force Arrow Scale: 0.5
-      Force Color: 204; 51; 51
-      History Length: 1
-      Name: Optoforce_3_rf
-      Topic: /optoforce_3
-      Torque Arrow Scale: 0.5
-      Torque Color: 204; 204; 51
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: rh_forearm
+    Default Light: true
+    Fixed Frame: H0_base_link
     Frame Rate: 100
   Name: root
   Tools:
@@ -271,22 +264,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.731916
+      Distance: 0.73191601
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.06
+        Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.0219344
-        Y: 0.052003
-        Z: 0.103558
+        X: 0.0219343994
+        Y: 0.0520029999
+        Z: 0.103557996
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
+      Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.01
-      Pitch: 0.380398
+      Near Clip Distance: 0.00999999978
+      Pitch: 0.380398005
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.33858
+      Yaw: 4.33858013
     Saved: ~
 Window Geometry:
   Displays:
@@ -294,7 +290,7 @@ Window Geometry:
   Height: 716
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000013c00000242fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000242000000dd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000242fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000002800000242000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004b00000003efc0100000002fb0000000800540069006d00650100000000000004b0000002f600fffffffb0000000800540069006d00650100000000000004500000000000000000000002590000024200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000015600000234fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003a00000234000000c600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000234fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003a000002340000009e00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004b00000003efc0100000002fb0000000800540069006d00650100000000000004b00000024400fffffffb0000000800540069006d006501000000000000045000000000000000000000023f0000023400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -305,4 +301,4 @@ Window Geometry:
     collapsed: false
   Width: 1200
   X: 156
-  Y: 14
+  Y: 24
