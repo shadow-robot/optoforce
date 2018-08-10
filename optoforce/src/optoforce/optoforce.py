@@ -291,7 +291,7 @@ class OptoforceDriver(object):
                                + ''.join(serial_number).strip())
             return OptoforceSerialNumber(serial_number)
         else:
-            slef._logger.error("I can't recognize the header of frame: "
+            self._logger.error("I can't recognize the header of frame: "
                           + self._frame_to_string(frame))
             return None
 
